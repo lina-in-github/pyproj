@@ -1,4 +1,9 @@
 import numpy as np
+def relu(x):
+    return x if x>0 else 0
+
+def delta_relu(x):
+    return 1 if x>0 else 0
 
 class SVM:
     def __init__(self, weights):
@@ -12,10 +17,11 @@ class SVM:
         self.weights = [i+rate * err for i in self.weights]
 
 class NetworkNode(SVM):
-    def __init__(self, weights, func, deltafunc):
+    def __init__(self, weights,subNetworks:list["NetworkNode"]=[],func=relu, deltafunc=delta_relu):
         super().__init__(weights)
         self.func = func
         self.deltafunc = deltafunc
+        self.SN=subNetworks
 
     def test(self, input_values):
         result = super().test(input_values)
@@ -30,16 +36,13 @@ class NetworkNode(SVM):
         # 更新权重
         super().learn(err, rate)
         return backprop_errors
-
-# 示例激活函数
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
-
-def sigmoid_derivative(x):
-    return sigmoid(x) * (1 - sigmoid(x))
+    def backward(self,err,rate):
+        t=self.learn(err,rate)
+        for i,j in zip(self.SN,t):
+            i.backward(j,rate)
 
 # 调用示例
-network_node = NetworkNode([1, 2, 3], sigmoid, sigmoid_derivative)
+network_node = NetworkNode([1, 2, 3])
 input_values = [4, 5, 6]
 error_values = [0.1, 0.2, 0.3]
 rate = 0.5
