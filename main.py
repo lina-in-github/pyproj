@@ -1,4 +1,5 @@
 import numpy as np
+import random
 def relu(x):
     return x if x>0 else 0
 
@@ -17,12 +18,28 @@ class SVM:
         self.weights = [i+rate * err for i in self.weights]
 
 class NetworkNode(SVM):
-    def __init__(self, weights,subNetworks:list["NetworkNode"]=[],func=relu, deltafunc=delta_relu):
+    def __init__(self, weights,subNetworks:list["NetworkNode"]=[],rootNetworks:list["NetworkNode"]=[],brotherNetworks:list["NetworkNode"]=[],func=relu, deltafunc=delta_relu):
         super().__init__(weights)
         self.func = func
         self.deltafunc = deltafunc
         self.SN=subNetworks
-
+        self.RN=rootNetworks
+        self.BN=brotherNetworks
+    @classmethod
+    def network_init(cls,inputnum,*layernum)->tuple[list["NetworkNode"],list["NetworkNode"]]:
+        weightn=inputnum
+        network=[]
+        for i in layernum:
+            k:list[NetworkNode]=[]
+            q=[]
+            for j in range(i):
+                k.append(NetworkNode([random.uniform(-1,1) for _ in weightn],subNetworks=q))
+            for j in q:
+                j.RN=k
+                j.BN=q
+            network.append(k)
+            weightn=i
+            k=q
     def test(self, input_values):
         result = super().test(input_values)
         return self.func(result)
@@ -36,9 +53,19 @@ class NetworkNode(SVM):
         # 更新权重
         super().learn(err, rate)
         return backprop_errors
+    def forward(self,data):
+        p=[]
+        for i in self.BN:
+            p.append(i.test(data))
+        for i in self.RN:
+            i.forward(p)
     def backward(self,err,rate):
-        t=self.learn(err,rate)
-        for i,j in zip(self.SN,t):
+        t=[0 for i in len(self.BN)]
+        for i in self.BN:
+            p=i.learn(err,rate)
+            for k,j in enumerate(p):
+                t[k]+=j
+        for i,j,k in zip(self.SN,t,range(len(t))):
             i.backward(j,rate)
 
 # 调用示例
