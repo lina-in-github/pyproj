@@ -15,10 +15,10 @@ class SVM:
         return self.func(self.output_cache)
     def learn(self,derr:float,rate=0.005):
         target=derr
-        self.deltaweights=[i-j*target*rate*self.dfunc(self.output_cache) for i,j in zip(self.deltaweights,self.input_cache)]
+        self.deltaweights=[-i-j*target*rate*self.dfunc(self.output_cache) for i,j in zip(self.deltaweights,self.input_cache)]
         return [i*target*rate*self.dfunc(self.output_cache) for i,j in zip(self.weights,self.input_cache)]
     def update(self):
-        self.weights+=self.deltaweights
+        self.weights=[i+j for i,j in zip(self.weights,self.deltaweights)]
 t=SVM(*[random.random() for i in range(3)])
 for _ in range(10):
     for i in range(0,100):
