@@ -17,8 +17,9 @@ class SVM:
         self.weights=[i-j*target*rate*self.dfunc(self.output_cache) for i,j in zip(self.weights,self.input_cache)]
         return [i*target*rate*self.dfunc(self.output_cache) for i,j in zip(self.weights,self.input_cache)]
 t=SVM(*[random.random() for i in range(3)])
-for _ in range(100):
+for _ in range(10):
     for i in range(0,100):
         for j in range(0,100):
-            t.learn(t.output(0.1*i,0.1*j)-0.2*i+0.3*j)
-            print(t.weights)            
+            v=t.learn(t.output(0.1*i,0.1*j)-0.2*i+0.3*j)
+            print(v)            
+print("w"+str(t.weights))
